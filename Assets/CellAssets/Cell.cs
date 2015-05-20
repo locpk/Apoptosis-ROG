@@ -4,14 +4,6 @@ using System.Collections.Generic;
 
 
 
-//namespace RTS 
-//{
-//    public static class Cap
-//    {
-
-//        public int cap { get; set; }
-//    }
-//}
 public class Cell : MonoBehaviour
 {
 
@@ -31,7 +23,8 @@ public class Cell : MonoBehaviour
 	AttackBehavior atkBehavior;
 	
 	GameObject target = null;
-	
+
+    
 	//PUBLIC FUNCTIONS------------------------------------------------
 	public void SetDestination()
 	{
@@ -43,6 +36,7 @@ public class Cell : MonoBehaviour
 			navObstacle.enabled = false;
 			navAgent.enabled = true;
 			navAgent.SetDestination (hit.point);
+            
 		}		
 	}
 
@@ -79,6 +73,7 @@ public class Cell : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
+            
         PhotonView me = GetComponent<PhotonView>();
         if (!me.isMine)
         {
