@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Linq;
-
+using UnityEngine.EventSystems;
 public class PlayerControls : MonoBehaviour
 {
 
@@ -24,6 +24,58 @@ public class PlayerControls : MonoBehaviour
     public Texture selectTexture;
     public Texture targetTexture;
     //PUBLIC FUNCTIONS-----------------------------
+
+    public void SelectN()
+    {
+
+        selectedUnits.Clear();
+        System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
+
+        foreach (var item in cells)
+        {
+            if (item.GetComponent<PhotonView>().isMine && item.gameObject.name == "Neutral Cell")
+            {
+                selectedUnits.Add(item);
+            }
+        }
+
+    }
+
+    public void SelectH()
+    {
+
+        selectedUnits.Clear();
+        System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
+
+        foreach (var item in cells)
+        {
+            if (item.GetComponent<PhotonView>().isMine && item.gameObject.name == "Heat Cell")
+            {
+                selectedUnits.Add(item);
+            }
+        }
+
+    }
+
+
+    public void SelectC()
+    {
+
+        selectedUnits.Clear();
+        System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
+
+        foreach (var item in cells)
+        {
+            if (item.GetComponent<PhotonView>().isMine && item.gameObject.name == "Cold Cell")
+            {
+                selectedUnits.Add(item);
+            }
+        }
+
+    }
+
+
+
     public void StopAllUnits()
     {
         foreach (var item in selectedUnits)
@@ -58,7 +110,7 @@ public class PlayerControls : MonoBehaviour
         foreach (var item in selectedUnits)
         {
             Vector3 guiPosition = Camera.main.WorldToScreenPoint(item.transform.position);
-            Rect rect = new Rect(guiPosition.x - 10 , -(guiPosition.y - Screen.height) - 10 , 20 , 20 );
+            Rect rect = new Rect(guiPosition.x - 10, -(guiPosition.y - Screen.height) - 10, 20, 20);
             GUI.DrawTexture(rect, selectTexture);
         }
         foreach (var item in selectedTargets)
@@ -68,54 +120,65 @@ public class PlayerControls : MonoBehaviour
             GUI.DrawTexture(rect, targetTexture);
 
         }
-       
+
     }
     // Update is called once per frame
     void Update()
     {
 
-        //select units
-        if (Input.GetMouseButton(0))
-            InstantiateUnitSelector();
-        else if (GameObject.FindGameObjectsWithTag("UnitSelector").Length > 0)
+        if (Input.GetKey(KeyCode.L))
         {
-            SelectUnits();
-            Destroy(GameObject.FindGameObjectWithTag("UnitSelector"));
+            SelectN();
+        }
+        //select units
+        
+        if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            if (Input.GetMouseButton(0))
+                InstantiateUnitSelector();
+            else if (GameObject.FindGameObjectsWithTag("UnitSelector").Length > 0)
+            {
+                SelectUnits();
+                Destroy(GameObject.FindGameObjectWithTag("UnitSelector"));
+            } 
         }
         //camera scroll
         if (Input.GetKey(KeyCode.F))
             ScrollCamera();
-        if (Input.GetMouseButton(1) && !Input.GetKey(KeyCode.M))
+        if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
-            InstantiateTargetSelector();
-        }
-        else if (GameObject.FindGameObjectsWithTag("TargetSelector").Length > 0)
-        {
-            //set targets
-            if (selectedUnits.Count > 0)
+            if (Input.GetMouseButton(1) && !Input.GetKey(KeyCode.M))
             {
-                SelectTargets();
+                InstantiateTargetSelector();
             }
-            //set waypoint
-            if (selectedTargets.Count == 0)
+            else if (GameObject.FindGameObjectsWithTag("TargetSelector").Length > 0)
             {
-                foreach (var item in selectedTargets)
+                //set targets
+                if (selectedUnits.Count > 0)
                 {
-                    item.GetComponent<Cell>().SetTarget(null);
+                    SelectTargets();
                 }
-                SetWaypoint();
-
-                RaycastHit hit;
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out hit, 100))
+                //set waypoint
+                if (selectedTargets.Count == 0)
                 {
-                    GameObject.Instantiate(pin, new Vector3(hit.point.x+0.5f, -1.0f, hit.point.z + 0.5f ), Quaternion.Euler(90, 0, 0));
+                    foreach (var item in selectedTargets)
+                    {
+                        item.GetComponent<Cell>().SetTarget(null);
+                    }
+                    SetWaypoint();
+
+                    RaycastHit hit;
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out hit, 100))
+                    {
+                        GameObject.Instantiate(pin, new Vector3(hit.point.x + 0.5f, -1.0f, hit.point.z + 0.5f), Quaternion.Euler(90, 0, 0));
+                    }
+
+
                 }
-
-
+                Destroy(GameObject.FindGameObjectWithTag("TargetSelector"));
             }
-            Destroy(GameObject.FindGameObjectWithTag("TargetSelector"));
         }
         //multiply selected units
         if (Input.GetKeyUp(KeyCode.D))
@@ -138,7 +201,7 @@ public class PlayerControls : MonoBehaviour
         Camera.main.transform.position = Vector3.MoveTowards(fromPos, toPos, Time.deltaTime * cameraSpeed * Vector3.Distance(fromPos, toPos));
 
         //zoom in
-        if (Input.GetAxis("Mouse ScrollWheel") < 0) 
+        if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
             Camera.main.orthographicSize++;
         }
@@ -146,26 +209,28 @@ public class PlayerControls : MonoBehaviour
         {
             Camera.main.orthographicSize--;
         }
-        if (Camera.main.orthographicSize < 5 )
+        if (Camera.main.orthographicSize < 5)
         {
             Camera.main.orthographicSize = 5;
         }
-       
+
     }
 
     void InstantiateUnitSelector()
     {
-        if (GameObject.FindGameObjectsWithTag("UnitSelector").Length == 0)
-        {
-            Vector3 instantiateAtPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
-            instantiateAtPos.y = 0;
-            Instantiate(unitSelector, instantiateAtPos, Quaternion.Euler(90, 0, 0));
-        }
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
-        mousePos.y = 0;
-        GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius = Vector3.Distance(mousePos, GameObject.FindGameObjectWithTag("UnitSelector").transform.position);
-        GameObject.FindGameObjectWithTag("UnitSelector").transform.localScale = Vector3.one * GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius * 10;
+            if (GameObject.FindGameObjectsWithTag("UnitSelector").Length == 0)
+            {
+                Vector3 instantiateAtPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
+                instantiateAtPos.y = 0;
+                Instantiate(unitSelector, instantiateAtPos, Quaternion.Euler(90, 0, 0));
+            }
+
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
+            mousePos.y = 0;
+            GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius = Vector3.Distance(mousePos, GameObject.FindGameObjectWithTag("UnitSelector").transform.position);
+            GameObject.FindGameObjectWithTag("UnitSelector").transform.localScale = Vector3.one * GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius * 10;
+        
     }
 
     void InstantiateTargetSelector()
@@ -185,23 +250,26 @@ public class PlayerControls : MonoBehaviour
 
     void SelectUnits()
     {
-        selectedUnits.Clear();
-        System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
-        for (int i = 0; i < cells.Count; i++)
-        {
-            Vector3 unitPos = new Vector3(cells[i].transform.position.x, 0, cells[i].transform.position.z);
-            if (GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius >= Vector3.Distance(GameObject.FindGameObjectWithTag("UnitSelector").transform.position, unitPos) - cells[i].GetComponent<SphereCollider>().radius * 4)
+        
+            selectedUnits.Clear();
+            System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
+            for (int i = 0; i < cells.Count; i++)
             {
-                selectedUnits.Add(cells[i]);
+                Vector3 unitPos = new Vector3(cells[i].transform.position.x, 0, cells[i].transform.position.z);
+                if (GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius >= Vector3.Distance(GameObject.FindGameObjectWithTag("UnitSelector").transform.position, unitPos) - cells[i].GetComponent<SphereCollider>().radius * 4)
+                {
+                    selectedUnits.Add(cells[i]);
+                }
             }
-        }
-        for (int i = 0; i < selectedUnits.Count; i++)
-        {
-            while (i < selectedUnits.Count && !selectedUnits[i].GetComponent<PhotonView>().isMine)
+            for (int i = 0; i < selectedUnits.Count; i++)
             {
-                selectedUnits.RemoveAt(i);
+                while (i < selectedUnits.Count && !selectedUnits[i].GetComponent<PhotonView>().isMine)
+                {
+                    selectedUnits.RemoveAt(i);
+                }
             }
-        }
+        
+        
     }
 
     void SelectTargets()
@@ -235,7 +303,7 @@ public class PlayerControls : MonoBehaviour
         {
             if (selectedTargets.Count > 0)
             {
-                
+
                 item.GetComponent<Cell>().SetTarget(selectedTargets[0]);
             }
         }
