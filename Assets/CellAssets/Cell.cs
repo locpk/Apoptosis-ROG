@@ -22,8 +22,9 @@ public class Cell : MonoBehaviour
     public float blinkTimer = 0.5f;
     AttackBehavior atkBehavior;
 
-    GameObject target = null;
-    Color hoopla;
+    public GameObject target = null;
+    public List<GameObject> targets;
+    Color startColor;
 
     
     //PUBLIC FUNCTIONS------------------------------------------------
@@ -46,15 +47,15 @@ public class Cell : MonoBehaviour
         navAgent.SetDestination(pos);
     }
 
-    public void SetTarget(GameObject _target)
+    public void SetTarget(List<GameObject> _targets)
     {
         navObstacle.enabled = false;
         navAgent.enabled = true;
-        if (_target != null)
+        if (_targets != null)
         {
-            target = _target;
+            targets = _targets;
+            target = _targets[0];
         }
-
     }
     //END OF PUBLIC FUNCTIONS-----------------------------------------
 
@@ -86,7 +87,8 @@ public class Cell : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        hoopla = GetComponent<SpriteRenderer>().color;
+        targets = new List<GameObject>();
+        startColor = GetComponent<SpriteRenderer>().color;
         PhotonView me = GetComponent<PhotonView>();
         if (!me.isMine)
         {
@@ -117,10 +119,14 @@ public class Cell : MonoBehaviour
     {
         float percentageOFhealth = (float)m_currentProteins / (float)m_Maxproteins;
         
-        GetComponent<SpriteRenderer>().color = Color.Lerp(Color.white, hoopla, percentageOFhealth);
+        GetComponent<SpriteRenderer>().color = Color.Lerp(Color.white, startColor, percentageOFhealth);
         if (alive)
         {
-
+            while (target == null && targets.Count > 0)
+            {
+                targets.RemoveAt(0);
+                target = targets[0];
+            }
 
             if (target != null)
             {
@@ -216,7 +222,7 @@ public class Cell : MonoBehaviour
                 closest = enemy;
             }
         }
-        SetTarget(closest);
+        //SetTarget(closest);
     }
     void Consume()
     {

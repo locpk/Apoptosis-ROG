@@ -383,7 +383,7 @@ public class PlayerControls : MonoBehaviour
             if (selectedTargets.Count > 0)
             {
 
-                item.GetComponent<Cell>().SetTarget(selectedTargets[0]);
+                item.GetComponent<Cell>().SetTarget(selectedTargets);
             }
         }
     }
