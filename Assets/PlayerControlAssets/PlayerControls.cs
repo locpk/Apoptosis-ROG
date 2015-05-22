@@ -21,7 +21,8 @@ public class PlayerControls : MonoBehaviour
     public float sW = 5;
 
     public GameObject pin;
-    public Texture aTexture;
+    public Texture selectTexture;
+    public Texture targetTexture;
     //PUBLIC FUNCTIONS-----------------------------
     public void StopAllUnits()
     {
@@ -36,7 +37,7 @@ public class PlayerControls : MonoBehaviour
     {
         foreach (var item in selectedUnits)
         {
-            if (item.GetComponent<Cell>().m_currentProteins % 2 == 0 && item.GetComponent<Cell>().m_currentProteins > 0)
+            if (item.GetComponent<Cell>().m_currentProteins > 0)
             {
                 item.GetComponent<Split>().Divide();
             }
@@ -58,13 +59,21 @@ public class PlayerControls : MonoBehaviour
         {
             Vector3 guiPosition = Camera.main.WorldToScreenPoint(item.transform.position);
             Rect rect = new Rect(guiPosition.x - 10 , -(guiPosition.y - Screen.height) - 10 , 20 , 20 );
-            GUI.DrawTexture(rect, aTexture);
+            GUI.DrawTexture(rect, selectTexture);
         }
+        foreach (var item in selectedTargets)
+        {
+            Vector3 guiPosition = Camera.main.WorldToScreenPoint(item.transform.position);
+            Rect rect = new Rect(guiPosition.x - 10, -(guiPosition.y - Screen.height) - 10, 20, 20);
+            GUI.DrawTexture(rect, targetTexture);
+
+        }
+       
     }
     // Update is called once per frame
     void Update()
     {
-        GameObject[] units = GameObject.FindGameObjectsWithTag("Unit");
+
         //select units
         if (Input.GetMouseButton(0))
             InstantiateUnitSelector();
@@ -199,10 +208,12 @@ public class PlayerControls : MonoBehaviour
     {
         selectedTargets.Clear();
         System.Collections.Generic.List<GameObject> targets = GameObject.FindGameObjectsWithTag("Target").ToList();
+
         for (int i = 0; i < targets.Count; i++)
         {
             targets[i] = targets[i].transform.parent.gameObject;
         }
+
         for (int i = 0; i < targets.Count; i++)
         {
             Vector3 targetPos = new Vector3(targets[i].transform.position.x, 0, targets[i].transform.position.z);
@@ -211,17 +222,20 @@ public class PlayerControls : MonoBehaviour
                 selectedTargets.Add(targets[i]);
             }
         }
+
         for (int i = 0; i < selectedTargets.Count; i++)
         {
-            while (i < selectedTargets.Count && selectedTargets[i].GetComponent<PhotonView>().isMine)
+            while (i < selectedTargets.Count && selectedTargets[i].tag != "Protein" && selectedTargets[i].GetComponent<PhotonView>().isMine)
             {
                 selectedTargets.RemoveAt(i);
             }
         }
+
         foreach (var item in selectedUnits)
         {
             if (selectedTargets.Count > 0)
             {
+                
                 item.GetComponent<Cell>().SetTarget(selectedTargets[0]);
             }
         }

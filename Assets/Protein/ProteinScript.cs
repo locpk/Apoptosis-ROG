@@ -29,14 +29,34 @@ public class ProteinScript : MonoBehaviour {
 		//testing
         //M_value -= Time.deltaTime;
 
-        //if(M_value/100 <= 0.5f)
-        //{
-        //    this.transform.localScale = new Vector3(0.5f ,0.0f,0.5f);
-        //}
+        if (M_value / 100 <= 0.5f)
+        {
+            this.transform.localScale = new Vector3(0.5f, 0.0f, 0.5f);
+        }
 
-        //if(M_value <= 0.0f)
-        //{
-        //    Destroy(gameObject);
-        //}
+        if (M_value <= 0.0f)
+        {
+            
+            PhotonNetwork.Destroy(gameObject);
+        }
 	}
+
+    [RPC]
+    void DepleteProtein(int value, PhotonMessageInfo info)
+    {
+        m_value -= value;
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.isWriting == true)
+        {
+            stream.SendNext(m_value);
+        }
+        else
+        {
+            m_value = (float)stream.ReceiveNext();
+        }
+    }
+   
 }

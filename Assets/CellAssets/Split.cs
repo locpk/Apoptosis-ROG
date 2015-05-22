@@ -91,12 +91,14 @@ public class Split : Photon.MonoBehaviour {
         if (Global.GlobalVariables.cap <= Global.GlobalVariables.MAX_CAP)
         {
             //half the proteins for new cells
+            
+            int num = GetComponent<Cell>().m_currentProteins;
             GetComponent<Cell>().m_currentProteins /= 2;
             Vector3 newposition = this.transform.position;
             newposition += Quaternion.Euler(0, 0, Random.Range(0, 360)) * new Vector3(GetComponent<SphereCollider>().radius, 0, 0);
             GameObject newCell1 = PhotonNetwork.Instantiate(gameObject.name, newposition, Quaternion.Euler(90, 0, 0), 0);
             newCell1.name = gameObject.name;
-            newCell1.GetComponent<Cell>().m_currentProteins = GetComponent<Cell>().m_currentProteins;
+            newCell1.GetComponent<Cell>().m_currentProteins = GetComponent<Cell>().m_currentProteins + num % 2;
             // move the second new cell out of the first one
             newCell1.GetComponent<Split>().M_move = true;
 
