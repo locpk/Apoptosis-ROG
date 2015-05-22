@@ -23,8 +23,9 @@ public class Cell : MonoBehaviour
     AttackBehavior atkBehavior;
 
     GameObject target = null;
+    Color hoopla;
 
-
+    
     //PUBLIC FUNCTIONS------------------------------------------------
     public void SetDestination()
     {
@@ -53,7 +54,7 @@ public class Cell : MonoBehaviour
         {
             target = _target;
         }
-            
+
     }
     //END OF PUBLIC FUNCTIONS-----------------------------------------
 
@@ -85,7 +86,7 @@ public class Cell : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-
+        hoopla = GetComponent<SpriteRenderer>().color;
         PhotonView me = GetComponent<PhotonView>();
         if (!me.isMine)
         {
@@ -114,9 +115,13 @@ public class Cell : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float percentageOFhealth = (float)m_currentProteins / (float)m_Maxproteins;
+        
+        GetComponent<SpriteRenderer>().color = Color.Lerp(Color.white, hoopla, percentageOFhealth);
         if (alive)
         {
-          
+
+
             if (target != null)
             {
                 navObstacle.enabled = false;
@@ -138,8 +143,8 @@ public class Cell : MonoBehaviour
                                 blinkTimer = 0.5f;
                                 target.GetComponent<SpriteRenderer>().enabled = true;
                             }
-                            
-                            
+
+
                         }
                     }
                 }
@@ -164,7 +169,7 @@ public class Cell : MonoBehaviour
                         {
                             target = null;
                         }
-                        
+
                     }
 
                 }
@@ -190,7 +195,7 @@ public class Cell : MonoBehaviour
                 alive = false;
                 Global.GlobalVariables.Cap--;
                 PhotonNetwork.Destroy(gameObject);
-               
+
             }
         }
     }
@@ -215,8 +220,8 @@ public class Cell : MonoBehaviour
     }
     void Consume()
     {
-            GetComponent<PhotonView>().RPC("ConsumeProtein", GetComponent<PhotonView>().owner, (int)target.GetComponent<ProteinScript>().M_value);
-            target.GetComponent<PhotonView>().RPC("DepleteProtein", target.GetComponent<PhotonView>().owner, (int)target.GetComponent<ProteinScript>().M_value);
-            GetComponent<AudioSource>().Play();
+        GetComponent<PhotonView>().RPC("ConsumeProtein", GetComponent<PhotonView>().owner, (int)target.GetComponent<ProteinScript>().M_value);
+        target.GetComponent<PhotonView>().RPC("DepleteProtein", target.GetComponent<PhotonView>().owner, (int)target.GetComponent<ProteinScript>().M_value);
+        GetComponent<AudioSource>().Play();
     }
 }

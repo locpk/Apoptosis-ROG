@@ -12,9 +12,10 @@ public class logo : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         timer -= Time.deltaTime;
-        if (timer <= 0.0f)
+       
+        if (timer <= 0.0f || Input.anyKeyDown)
         {
-            Application.LoadLevel("MainScene(Dank)");
+            Application.LoadLevel("HowToPlay");
             
         }
 	}

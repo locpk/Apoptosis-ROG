@@ -13,6 +13,8 @@ public class PlayerControls : MonoBehaviour
     public GameObject targetSelector;
     // the list of selected units
     public System.Collections.Generic.List<GameObject> selectedUnits;
+
+    public System.Collections.Generic.List<GameObject>[] groups;
     // the list of selected targets
     public System.Collections.Generic.List<GameObject> selectedTargets;
     // the units movement script
@@ -23,7 +25,53 @@ public class PlayerControls : MonoBehaviour
     public GameObject pin;
     public Texture selectTexture;
     public Texture targetTexture;
+    float clicked = 0;
+    float clicktime = 0;
+    float clickdelay = 1.0f;
     //PUBLIC FUNCTIONS-----------------------------
+
+
+
+    bool DoubleClick()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            clicked++;
+            if (clicked == 1) clicktime = Time.time;
+        }
+        if (clicked > 1 && Time.time - clicktime < clickdelay)
+        {
+            clicked = 0;
+            clicktime = 0;
+            return true;
+        }
+        else if (clicked > 2 || Time.time - clicktime > 1) clicked = 0;
+        return false;
+    }
+
+
+    public void SelectingSameType()
+    {
+
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out hit, 100))
+        {
+            selectedUnits.Clear();
+            System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
+
+            foreach (var item in cells)
+            {
+                if (item.gameObject.name == hit.collider.gameObject.name)
+                {
+                    selectedUnits.Add(item);
+                }
+            }
+        }
+
+
+    }
 
     public void SelectN()
     {
@@ -109,16 +157,22 @@ public class PlayerControls : MonoBehaviour
     {
         foreach (var item in selectedUnits)
         {
-            Vector3 guiPosition = Camera.main.WorldToScreenPoint(item.transform.position);
-            Rect rect = new Rect(guiPosition.x - 10, -(guiPosition.y - Screen.height) - 10, 20, 20);
-            GUI.DrawTexture(rect, selectTexture);
+            if (item != null)
+            {
+                Vector3 guiPosition = Camera.main.WorldToScreenPoint(item.transform.position);
+                Rect rect = new Rect(guiPosition.x - 10, -(guiPosition.y - Screen.height) - 10, 20, 20);
+                GUI.DrawTexture(rect, selectTexture);
+            }
+
         }
         foreach (var item in selectedTargets)
         {
-            Vector3 guiPosition = Camera.main.WorldToScreenPoint(item.transform.position);
-            Rect rect = new Rect(guiPosition.x - 10, -(guiPosition.y - Screen.height) - 10, 20, 20);
-            GUI.DrawTexture(rect, targetTexture);
-
+            if (item != null)
+            {
+                Vector3 guiPosition = Camera.main.WorldToScreenPoint(item.transform.position);
+                Rect rect = new Rect(guiPosition.x - 10, -(guiPosition.y - Screen.height) - 10, 20, 20);
+                GUI.DrawTexture(rect, targetTexture);
+            }
         }
 
     }
@@ -126,21 +180,31 @@ public class PlayerControls : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetKey(KeyCode.L))
-        {
-            SelectN();
-        }
         //select units
-        
         if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
-            if (Input.GetMouseButton(0))
+            
+            if (DoubleClick())
+            {
+                SelectingSameType();
+                clicked = 0;
+            }
+
+            if (Input.GetMouseButton(0) && clicked != 0) 
+            {
                 InstantiateUnitSelector();
+                
+            }
             else if (GameObject.FindGameObjectsWithTag("UnitSelector").Length > 0)
             {
                 SelectUnits();
                 Destroy(GameObject.FindGameObjectWithTag("UnitSelector"));
-            } 
+            }
+                
+           
+
+
+
         }
         //camera scroll
         if (Input.GetKey(KeyCode.F))
@@ -190,6 +254,21 @@ public class PlayerControls : MonoBehaviour
         {
             StopAllUnits();
         }
+        foreach (var item in selectedUnits)
+        {
+            if (item == null)
+            {
+                selectedUnits.Remove(item);
+            }
+        }
+
+        foreach (var item in selectedTargets)
+        {
+            if (item == null)
+            {
+                selectedTargets.Remove(item);
+            }
+        }
     }
 
     void ScrollCamera()
@@ -219,18 +298,18 @@ public class PlayerControls : MonoBehaviour
     void InstantiateUnitSelector()
     {
 
-            if (GameObject.FindGameObjectsWithTag("UnitSelector").Length == 0)
-            {
-                Vector3 instantiateAtPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
-                instantiateAtPos.y = 0;
-                Instantiate(unitSelector, instantiateAtPos, Quaternion.Euler(90, 0, 0));
-            }
+        if (GameObject.FindGameObjectsWithTag("UnitSelector").Length == 0)
+        {
+            Vector3 instantiateAtPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
+            instantiateAtPos.y = 0;
+            Instantiate(unitSelector, instantiateAtPos, Quaternion.Euler(90, 0, 0));
+        }
 
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
-            mousePos.y = 0;
-            GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius = Vector3.Distance(mousePos, GameObject.FindGameObjectWithTag("UnitSelector").transform.position);
-            GameObject.FindGameObjectWithTag("UnitSelector").transform.localScale = Vector3.one * GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius * 10;
-        
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.y));
+        mousePos.y = 0;
+        GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius = Vector3.Distance(mousePos, GameObject.FindGameObjectWithTag("UnitSelector").transform.position);
+        GameObject.FindGameObjectWithTag("UnitSelector").transform.localScale = Vector3.one * GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius * 10;
+
     }
 
     void InstantiateTargetSelector()
@@ -250,26 +329,26 @@ public class PlayerControls : MonoBehaviour
 
     void SelectUnits()
     {
-        
-            selectedUnits.Clear();
-            System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
-            for (int i = 0; i < cells.Count; i++)
+
+        selectedUnits.Clear();
+        System.Collections.Generic.List<GameObject> cells = GameObject.FindGameObjectsWithTag("Unit").ToList();
+        for (int i = 0; i < cells.Count; i++)
+        {
+            Vector3 unitPos = new Vector3(cells[i].transform.position.x, 0, cells[i].transform.position.z);
+            if (GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius >= Vector3.Distance(GameObject.FindGameObjectWithTag("UnitSelector").transform.position, unitPos) - cells[i].GetComponent<SphereCollider>().radius * 4)
             {
-                Vector3 unitPos = new Vector3(cells[i].transform.position.x, 0, cells[i].transform.position.z);
-                if (GameObject.FindGameObjectWithTag("UnitSelector").GetComponent<SphereCollider>().radius >= Vector3.Distance(GameObject.FindGameObjectWithTag("UnitSelector").transform.position, unitPos) - cells[i].GetComponent<SphereCollider>().radius * 4)
-                {
-                    selectedUnits.Add(cells[i]);
-                }
+                selectedUnits.Add(cells[i]);
             }
-            for (int i = 0; i < selectedUnits.Count; i++)
+        }
+        for (int i = 0; i < selectedUnits.Count; i++)
+        {
+            while (i < selectedUnits.Count && !selectedUnits[i].GetComponent<PhotonView>().isMine)
             {
-                while (i < selectedUnits.Count && !selectedUnits[i].GetComponent<PhotonView>().isMine)
-                {
-                    selectedUnits.RemoveAt(i);
-                }
+                selectedUnits.RemoveAt(i);
             }
-        
-        
+        }
+
+
     }
 
     void SelectTargets()

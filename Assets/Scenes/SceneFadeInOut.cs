@@ -21,6 +21,8 @@ public class SceneFadeInOut : MonoBehaviour {
         if (sceneStarting)
             // ... call the StartScene function.
             StartScene();
+
+       
     }
 
 
@@ -68,5 +70,10 @@ public class SceneFadeInOut : MonoBehaviour {
         if (FadeImg.color.a >= 0.95f)
             // ... reload the level
             Application.LoadLevel("MainScene(Dank)");
+    }
+
+    public void LoadMainLevel()
+    {
+        Application.LoadLevel("MainScene(Dank)");
     }
 }

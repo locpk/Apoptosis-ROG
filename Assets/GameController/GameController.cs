@@ -31,6 +31,11 @@ public class GameController : Photon.MonoBehaviour
 
     void OnJoinedRoom()
     {
+        if (PhotonNetwork.room.playerCount > 1)
+        {
+            PhotonNetwork.room.open = false;
+        }
+
         Vector3 spawnPoint = Vector3.zero;
 
         PhotonNetwork.room.maxPlayers = 2;
