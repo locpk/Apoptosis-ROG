@@ -7,8 +7,8 @@ public class MiniMap : MonoBehaviour {
 
 	Camera miniMapCamera;
 
-	Rect minimapGUIBorder, miniMapRectangle;
-
+	//Rect minimapGUIBorder, miniMapRectangle;
+    Rect miniMapRectangle;
 
 	public Vector2 TransformPosition(Vector3 position){
 		Vector3 offset;
@@ -22,7 +22,7 @@ public class MiniMap : MonoBehaviour {
 
 	void Start(){
 		miniMapRectangle = new Rect (map.GetComponentInChildren<RectTransform> ().rect);
-		minimapGUIBorder = new Rect (0, Screen.height - 150, 150, Screen.height);
+		//minimapGUIBorder = new Rect (0, Screen.height - 150, 150, Screen.height);
 
 		GameObject miniCam = new GameObject ("MiniMapCamera", typeof(Camera));
 		miniMapCamera = miniCam.GetComponent<Camera> ();

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using Global;
 public class GameController : Photon.MonoBehaviour
 {
 
@@ -51,7 +51,7 @@ public class GameController : Photon.MonoBehaviour
             Camera.main.transform.position = new Vector3(spawnPoint.x, Camera.main.transform.position.y, spawnPoint.z);
         }
 
-        Camera.main.orthographicSize = 30;
+        Camera.main.orthographicSize = 19;
         GameObject ColdCell = PhotonNetwork.Instantiate("Cold Cell", spawnPoint, Quaternion.Euler(90, 0, 0), 0);
         ColdCell.name = "Cold Cell";
         spawnPoint.z += 2;
@@ -60,7 +60,8 @@ public class GameController : Photon.MonoBehaviour
         spawnPoint.z += 2;
         GameObject NeutralCell = PhotonNetwork.Instantiate("Neutral Cell", spawnPoint, Quaternion.Euler(90, 0, 0), 0);
         NeutralCell.name = "Neutral Cell";
-
+        Global.GlobalVariables.Cap = 3;
+        Debug.Log("Init = 3: "+ Global.GlobalVariables.Cap);
     }
 
     void OnLeftRoom()

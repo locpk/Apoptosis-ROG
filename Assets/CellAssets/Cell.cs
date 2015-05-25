@@ -19,14 +19,14 @@ public class Cell : MonoBehaviour
     NavMeshAgent navAgent;
     NavMeshObstacle navObstacle;
     bool alive;
-    public float blinkTimer = 0.5f;
+    public bool being_attack = false;
     AttackBehavior atkBehavior;
 
     public GameObject target = null;
     public List<GameObject> targets;
     Color startColor;
 
-    
+
     //PUBLIC FUNCTIONS------------------------------------------------
     public void SetDestination()
     {
@@ -55,6 +55,10 @@ public class Cell : MonoBehaviour
         {
             targets = _targets;
             target = _targets[0];
+        }
+        else
+        {
+            target = null;
         }
     }
     //END OF PUBLIC FUNCTIONS-----------------------------------------
@@ -89,19 +93,10 @@ public class Cell : MonoBehaviour
     {
         targets = new List<GameObject>();
         startColor = GetComponent<SpriteRenderer>().color;
-        PhotonView me = GetComponent<PhotonView>();
-        if (!me.isMine)
+        if (!GetComponent<PhotonView>().isMine)
         {
-            //foreach (GameObject item in transform)
-            //{
-            //    if (item.name == "Minimap Sphere")
-            //    {
-            //        GetComponent<SpriteRenderer>().color = Color.black
-            //    }
-            //}
             transform.Find("Minimap Sphere").GetComponent<SpriteRenderer>().color = Color.black;
-            //SpriteRenderer enemy =  GetComponentInChildren<SpriteRenderer>();
-            //enemy.color = Color.black;
+            GetComponent<SpriteRenderer>().color = Color.black;
         }
         navAgent = GetComponent<NavMeshAgent>();
         navObstacle = GetComponent<NavMeshObstacle>();
@@ -118,10 +113,15 @@ public class Cell : MonoBehaviour
     void Update()
     {
         float percentageOFhealth = (float)m_currentProteins / (float)m_Maxproteins;
+
+        if (GetComponent<PhotonView>().isMine)
+        {
+            GetComponent<SpriteRenderer>().color = Color.Lerp(Color.white, startColor, percentageOFhealth);
+        }
         
-        GetComponent<SpriteRenderer>().color = Color.Lerp(Color.white, startColor, percentageOFhealth);
         if (alive)
         {
+
             while (target == null && targets.Count > 0)
             {
                 targets.RemoveAt(0);
@@ -138,20 +138,7 @@ public class Cell : MonoBehaviour
                     if (Vector3.Distance(transform.position, target.transform.position) <= attackRange)
                     {
                         atkBehavior.Attack(target);
-                        if (target.GetComponent<Cell>().alive)
-                        {
-                            if (blinkTimer > 0.0f)
-                            {
-                                target.GetComponent<SpriteRenderer>().enabled = false;
-                            }
-                            if (blinkTimer <= 0.0f)
-                            {
-                                blinkTimer = 0.5f;
-                                target.GetComponent<SpriteRenderer>().enabled = true;
-                            }
 
-
-                        }
                     }
                 }
                 else if (target.tag == "Protein")
@@ -190,6 +177,7 @@ public class Cell : MonoBehaviour
                 navObstacle.enabled = true;
             }
 
+
             lossOfProteinTimer += 1 * Time.deltaTime;
             if (lossOfProteinTimer >= 20)
             {
@@ -200,9 +188,15 @@ public class Cell : MonoBehaviour
             {
                 alive = false;
                 Global.GlobalVariables.Cap--;
+                if (Global.GlobalVariables.Cap < 0)
+                {
+                    Global.GlobalVariables.Cap = 0;
+                }
+                Debug.Log("Die -1: " + Global.GlobalVariables.Cap);
                 PhotonNetwork.Destroy(gameObject);
-
             }
+
+
         }
     }
 

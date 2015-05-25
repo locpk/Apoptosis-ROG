@@ -88,8 +88,9 @@ public class Split : Photon.MonoBehaviour {
 	public void Divide()
 	{
 
-        if (Global.GlobalVariables.cap <= Global.GlobalVariables.MAX_CAP)
+        if (GetComponent<Cell>().m_currentProteins >= 2 && Global.GlobalVariables.Cap + 1 <= Global.GlobalVariables.MAX_CAP)
         {
+            
             //half the proteins for new cells
             
             int num = GetComponent<Cell>().m_currentProteins;
@@ -102,8 +103,12 @@ public class Split : Photon.MonoBehaviour {
             // move the second new cell out of the first one
             newCell1.GetComponent<Split>().M_move = true;
 
+
+     
+
             //add 1 cap
-            Global.GlobalVariables.cap++; 
+            Global.GlobalVariables.Cap += 1;
+            Debug.Log("Devide +1: " + Global.GlobalVariables.Cap);
         }
 	}
 	

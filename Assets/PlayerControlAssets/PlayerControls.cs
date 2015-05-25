@@ -254,21 +254,9 @@ public class PlayerControls : MonoBehaviour
         {
             StopAllUnits();
         }
-        foreach (var item in selectedUnits)
-        {
-            if (item == null)
-            {
-                selectedUnits.Remove(item);
-            }
-        }
 
-        foreach (var item in selectedTargets)
-        {
-            if (item == null)
-            {
-                selectedTargets.Remove(item);
-            }
-        }
+        selectedUnits.RemoveAll(item => item == null);
+        selectedTargets.RemoveAll(item => item == null);
     }
 
     void ScrollCamera()
@@ -392,6 +380,7 @@ public class PlayerControls : MonoBehaviour
     {
         foreach (var item in selectedUnits)
         {
+        
             item.GetComponent<Cell>().SetTarget(null);
             item.GetComponent<Cell>().SetDestination();
         }
